@@ -1,0 +1,46 @@
+[scale.levels_labels]
+1 = "完全不符合"
+2 = "不符合"
+3 = "不确定"
+4 = "符合"
+5 = "完全符合"
+
+[items]
+reverse = [2, 6, 10, 18, 21, 24, 26, 32, 37]
+
+[items.weights]
+
+[groups."专业知识"]
+items = [1, 2, 3, 4, 5, 6]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."核心照护技能"]
+items = [7, 8, 9, 10, 11, 12, 13]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."应急救护与安全防控"]
+items = [14, 15, 16, 17, 18, 19]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."综合管理与应对"]
+items = [20, 21, 22, 23, 24]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."沟通协同与关系建立"]
+items = [25, 26, 27, 28, 29, 30]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."职业素养与伦理"]
+items = [31, 32, 33, 34, 35]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."持续发展与自我管理"]
+items = [36, 37, 38]
+aggregate = "mean"
+missing_threshold = 0.0

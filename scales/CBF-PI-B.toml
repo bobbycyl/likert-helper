@@ -1,0 +1,37 @@
+[scale.levels_labels]
+1 = "完全不符合"
+2 = "大部分不符合"
+3 = "有点不符合"
+4 = "有点符合"
+5 = "大部分符合"
+6 = "完全符合"
+
+[items]
+reverse = [5, 8, 13, 15, 18, 32, 36]
+
+[items.weights]
+
+[groups.openness]
+items = [4, 9, 14, 19, 24, 29, 34, 39]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups.conscientiousness]
+items = [2, 7, 12, 17, 22, 27, 32, 37]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups.extraversion]
+items = [5, 10, 15, 20, 25, 30, 35, 40]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups.agreeableness]
+items = [3, 8, 13, 18, 23, 28, 33, 38]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups.neuroticism]
+items = [1, 6, 11, 16, 21, 26, 31, 36]
+aggregate = "mean"
+missing_threshold = 0.0
