@@ -217,7 +217,9 @@ def show_result():
             temperature=0.3,
             stream=True,
         )
-        st.write_stream(stream)
+        with st.container(border=True):
+            st.write_stream(stream)
+            st.caption("Notes: AI generated content is for reference only, not for diagnosis.")
     except APIError:
         st.error("OpenAI API error.")
     except Exception as e:
