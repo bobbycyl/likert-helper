@@ -3,5 +3,6 @@
 .ruff_cache/
 .vscode/
 .workbuddy/
+.streamlit/secrets.toml
 *.pyc
 __pycache__/

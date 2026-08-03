@@ -40,8 +40,15 @@ def _read_raw(path: str) -> pd.DataFrame:
 def compute_likert(
     file: str | BytesIO | pd.DataFrame,
     config: LikertConfig,
+    apply_band: bool = False,
 ) -> pd.DataFrame:
-    """计算李克特量表得分"""
+    """计算李克特量表得分
+
+    @param file: 原始结果，支持文件名、BytesIO 和 DataFrame，约定第 0 列为 User 标识符，题号 = 列位置
+    @param config: 量表配置
+    @param apply_band: 如果 config 定义了 band，是否在结果中增添对应 group 得分的 band 列（默认不使用）
+    @return: 包含样本 ID 和每个 group 的得分，若 apply_band 为 True，则额外包含 group 得分对应的 band 列
+    """
     if isinstance(file, str):
         df = _read_raw(file)
     elif isinstance(file, pd.DataFrame):
@@ -112,7 +119,7 @@ def compute_likert(
         result[grp.name] = scores
 
         # 标记等级
-        if config.score_bands and grp.name in config.score_bands:
+        if apply_band and config.score_bands and grp.name in config.score_bands:
             result[f"{grp.name}_band"] = [
                 _apply_band(score, config.score_bands[grp.name]) for score in scores
             ]

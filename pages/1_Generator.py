@@ -4,6 +4,7 @@ import streamlit as st
 
 from likert import GroupConfig, ItemConfig, LikertConfig
 from likert.model import dump_config
+from stutils.stutils import clean_cache
 
 
 def item_settings(iid: int, content: str):
@@ -35,7 +36,7 @@ def generate_config():
                         reverse=st.session_state["gen_it_%d_r" % iid],
                         weight=st.session_state["gen_it_%d_w" % iid],
                     )
-                    for iid in group_iid_mapping[grp_name]
+                    for iid in group_iid_mapping.get(grp_name, [])
                 ],
                 # 以下两个参数不支持 GUI 设置，强制规范（不一定默认值）
                 aggregate="mean",
@@ -69,6 +70,21 @@ if "gen_levels" not in st.session_state:
 if "min_level" not in st.session_state:
     st.session_state.min_level = 1
 
+
+def start():
+    clean_cache("gen_lvl_")
+    _item_content_list = items_input.split("\n")
+    st.session_state.gen_item_length = len(_item_content_list)
+    st.session_state.gen_item_tuple_list = [
+        (iid, item_content)
+        for iid, item_content in enumerate(_item_content_list, start=1)
+    ]
+    st.session_state.gen_group_name_list = groups_input.split("\n")
+    st.session_state.gen_group_length = len(st.session_state.gen_group_name_list)
+    st.session_state.gen_levels = levels
+    st.session_state.min_level = min_level
+
+
 with st.form("gen_starter", True):
     items_input = st.text_area("Enter the items line by line.")
     groups_input = st.text_area("Enter the name of groups line by line.")
@@ -78,17 +94,8 @@ with st.form("gen_starter", True):
     min_level = st.number_input(
         "The minimum level", value=1, step=1, min_value=0, max_value=1
     )
-    if st.form_submit_button("Confirm"):
-        _item_content_list = items_input.split("\n")
-        st.session_state.gen_item_length = len(_item_content_list)
-        st.session_state.gen_item_tuple_list = [
-            (iid, item_content)
-            for iid, item_content in enumerate(_item_content_list, start=1)
-        ]
-        st.session_state.gen_group_name_list = groups_input.split("\n")
-        st.session_state.gen_group_length = len(st.session_state.gen_group_name_list)
-        st.session_state.gen_levels = levels
-        st.session_state.min_level = min_level
+    st.form_submit_button("Confirm", on_click=start)
+
 
 with st.container(border=True):
     for level in range(

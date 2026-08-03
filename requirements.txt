@@ -1,6 +1,8 @@
 matplotlib
 numpy
+openai
 pandas
 plotly
+python-calamine
 streamlit
 tabulate
