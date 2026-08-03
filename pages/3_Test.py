@@ -125,7 +125,6 @@ def show_result():
         .reset_index()
         .rename(columns={"index": "User"})
     )
-    st.dataframe(df)
 
     # 合并题干与原始得分到一张表里，方便展示
     df_readable = pd.DataFrame(
