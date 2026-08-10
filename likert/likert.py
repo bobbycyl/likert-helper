@@ -1,3 +1,4 @@
+import math
 import os
 from io import BytesIO
 
@@ -7,22 +8,21 @@ import pandas as pd
 from .model import Bands, LikertConfig
 
 
-def _reverse_code(value: int | float, min_level: int, max_level: int) -> float:
+def _reverse_code(value: float, min_level: int, max_level: int) -> float:
     """反向编码"""
-    if value != value:  # NaN
+    if math.isnan(value):  # NaN
         return value
     return max_level - value + min_level
 
 
 def _apply_band(score: float, bands: Bands) -> str:
     """根据分数返回等级标签"""
-    if score != score:  # NaN
+    if math.isnan(score):  # NaN
         return ""
     for lo, hi, label in bands:
         if lo <= score <= hi:  # 这里必须使用闭区间
             return label
-    else:
-        return ""
+    return ""
 
 
 def _read_raw(path: str) -> pd.DataFrame:
@@ -31,10 +31,9 @@ def _read_raw(path: str) -> pd.DataFrame:
     ext = os.path.splitext(path)[1]
     if ext in {".xlsx", ".xls"}:
         return pd.read_excel(path, engine="calamine")
-    elif ext == ".csv":
+    if ext == ".csv":
         return pd.read_csv(path)
-    else:
-        raise ValueError(f"不支持的文件格式: {ext}")
+    raise ValueError(f"不支持的文件格式: {ext}")
 
 
 def compute_likert(
@@ -44,10 +43,10 @@ def compute_likert(
 ) -> pd.DataFrame:
     """计算李克特量表得分
 
-    @param file: 原始结果，支持文件名、BytesIO 和 DataFrame，约定第 0 列为 User 标识符，题号 = 列位置
-    @param config: 量表配置
-    @param apply_band: 如果 config 定义了 band，是否在结果中增添对应 group 得分的 band 列（默认不使用）
-    @return: 包含样本 ID 和每个 group 的得分，若 apply_band 为 True，则额外包含 group 得分对应的 band 列
+    :param file: 原始结果，支持文件名、BytesIO 和 DataFrame，约定第 0 列为 User 标识符，题号 = 列位置
+    :param config: 量表配置
+    :param apply_band: 如果 config 定义了 band，是否在结果中增添对应 group 得分的 band 列（默认不使用）
+    :return: 包含样本 ID 和每个 group 的得分，若 apply_band 为 True，则额外包含 group 得分对应的 band 列
     """
     if isinstance(file, str):
         df = _read_raw(file)
@@ -73,7 +72,7 @@ def compute_likert(
         raise ValueError("题项数量不匹配")
 
     # 开始计算
-    result = {}
+    result: dict[str, list[float] | list[str]] = {}
 
     for grp in config.groups:
         # 取出该组对应的题号（由于列 0 是样本 ID，所以题号与列号对应）
@@ -85,16 +84,16 @@ def compute_likert(
             if it.reverse:
                 col_idx = item_cols.index(it.id)
                 subset.iloc[:, col_idx] = subset.iloc[:, col_idx].apply(
-                    lambda v, mi=_min_lvl, ma=_max_lvl: _reverse_code(v, mi, ma)
+                    lambda v, mi=_min_lvl, ma=_max_lvl: _reverse_code(v, mi, ma),
                 )
 
         # 权重向量
         weights = np.array([it.weight for it in grp.items])
 
         # 逐行聚合
-        scores = []
+        scores: list[float] = []
         for idx in range(len(subset)):
-            row = pd.to_numeric(subset.iloc[idx], errors="coerce").values
+            row = pd.Series(pd.to_numeric(subset.iloc[idx], errors="coerce")).values
             mask = ~np.isnan(row)
             n_valid = mask.sum()
             n_total = len(row)

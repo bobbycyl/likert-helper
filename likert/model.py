@@ -1,12 +1,11 @@
 import json
-from dataclasses import dataclass, field
-from typing import Literal, Optional
-
 import tomllib
+from dataclasses import dataclass, field
+from typing import Literal
 
 ITEM_DEFAULT_REVERSE = False
 ITEM_DEFAULT_WEIGHT = 1.0
-GROUP_DEFAULT_AGGREGATE = "mean"
+GROUP_DEFAULT_AGGREGATE: Literal["mean", "sum"] = "mean"
 GROUP_DEFAULT_MISSING_THRESHOLD = 0.5
 
 
@@ -26,7 +25,9 @@ class GroupConfig:
     name: str  # 特征分组名
     items: list[ItemConfig]  # 特征分组题项列表
     aggregate: Literal["mean", "sum"] = GROUP_DEFAULT_AGGREGATE  # 聚合方式（默认 mean）
-    missing_threshold: float = GROUP_DEFAULT_MISSING_THRESHOLD  # 允许的缺失比例上限，超过则记为 NaN（默认 0.5，如需严格模式，请设置为 0）
+    missing_threshold: float = (
+        GROUP_DEFAULT_MISSING_THRESHOLD  # 允许的缺失比例上限，超过则记为 NaN（默认 0.5，如需严格模式，请设置为 0）
+    )
 
 
 type Bands = list[tuple[float, float, str]]  # [(low, high, label), ...]
@@ -43,7 +44,7 @@ class LikertConfig:
     levels_labels: dict[int, str]  # 分级对应表达
     groups: list[GroupConfig]
     item_map: dict[int, ItemConfig] = field(default_factory=dict)
-    score_bands: Optional[dict[str, Bands]] = None
+    score_bands: dict[str, Bands] | None = None
 
     def __post_init__(self):
         self.item_map = {it.id: it for grp in self.groups for it in grp.items}
@@ -56,7 +57,7 @@ class LikertConfig:
 
     @classmethod
     def from_json(cls, path: str):
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             raw = json.load(f)
         return parse_config(raw)
 
@@ -76,7 +77,7 @@ def parse_config(toml_dict: dict) -> LikertConfig:
 
     # 题项全局设置
     items_section = toml_dict["items"]
-    global_reverse_set = set(int(x) for x in items_section.get("reverse", []))
+    global_reverse_set = {int(x) for x in items_section.get("reverse", [])}
     global_weights = {
         int(k): float(v) for k, v in items_section.get("weights", {}).items()
     }
@@ -87,10 +88,12 @@ def parse_config(toml_dict: dict) -> LikertConfig:
     for grp_name, grp_dict in groups_section.items():
         item_ids = [int(x) for x in grp_dict["items"]]
         aggregate = grp_dict.get(
-            "aggregate", GROUP_DEFAULT_AGGREGATE
+            "aggregate",
+            GROUP_DEFAULT_AGGREGATE,
         )  # 与 GroupConfig 默认值保持一致
         missing_threshold = grp_dict.get(
-            "missing_threshold", GROUP_DEFAULT_MISSING_THRESHOLD
+            "missing_threshold",
+            GROUP_DEFAULT_MISSING_THRESHOLD,
         )  # 与 GroupConfig 默认值保持一致
 
         grp_items = []
@@ -100,9 +103,10 @@ def parse_config(toml_dict: dict) -> LikertConfig:
                     id=iid,
                     reverse=iid in global_reverse_set,
                     weight=global_weights.get(
-                        iid, ITEM_DEFAULT_WEIGHT
+                        iid,
+                        ITEM_DEFAULT_WEIGHT,
                     ),  # 与 ItemConfig 默认值保持一致
-                )
+                ),
             )
 
         groups.append(
@@ -111,22 +115,23 @@ def parse_config(toml_dict: dict) -> LikertConfig:
                 items=grp_items,
                 aggregate=aggregate,
                 missing_threshold=missing_threshold,
-            )
+            ),
         )
 
     # Optional: 分数等级划分
-    score_bands: Optional[dict[str, Bands]] = None
-    bands_section = toml_dict.get("score_bands", None)  # 这是一个 TOML 表数组
+    score_bands: dict[str, Bands] | None = None
+    bands_section = toml_dict.get("score_bands", {})  # 这是一个 TOML 表数组
     if bands_section is not None:
-        score_bands = {}
+        _score_bands: dict[str, Bands] = {}
         for grp_name, band_list in bands_section.items():
             # min, max, label
             parsed_bands: Bands = []
             for band in band_list:
                 parsed_bands.append(
-                    (float(band["min"]), float(band["max"]), str(band["label"]))
+                    (float(band["min"]), float(band["max"]), str(band["label"])),
                 )
-            score_bands[grp_name] = sorted(parsed_bands, key=lambda x: x[0])
+            _score_bands[grp_name] = sorted(parsed_bands, key=lambda x: x[0])
+        score_bands = _score_bands
 
     return LikertConfig(
         levels_labels=levels_labels,
@@ -142,7 +147,7 @@ def dump_config(config: LikertConfig) -> dict:
         },
         "items": {
             "reverse": sorted(
-                [it.id for grp in config.groups for it in grp.items if it.reverse]
+                [it.id for grp in config.groups for it in grp.items if it.reverse],
             ),
             "weights": {
                 str(it.id): it.weight

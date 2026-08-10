@@ -8,7 +8,7 @@ from openai import APIError, OpenAI
 
 from likert import LikertConfig, compute_likert
 from likert.model import dump_config
-from stutils.stutils import clean_cache
+from stutils.stutils import clean_cache, select_scale
 
 
 @st.cache_resource
@@ -18,11 +18,6 @@ def get_openai_client():
         base_url=st.secrets.openai.base_url,
     )
 
-
-scales_dir = os.path.join(os.path.dirname(__file__), "..", "scales")
-local_scale_files = [
-    x for x in os.listdir(scales_dir) if os.path.splitext(x)[1] in [".toml", ".json"]
-]
 
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
@@ -49,23 +44,15 @@ def start():
 
 
 with st.form("test_starter"):
-    scale = st.selectbox(
-        "Select a scale",
-        local_scale_files,
-        index=None,
-        key="test_scale",
-        format_func=lambda x: os.path.splitext(x)[0],
+    scale_path = select_scale()
+    scale_ext = os.path.splitext(scale_path)[1]
+    st.session_state.test_scale_config = (
+        LikertConfig.from_json(scale_path)
+        if scale_ext == ".json"
+        else LikertConfig.from_toml(scale_path)
     )
-    if scale:
-        scale_ext = os.path.splitext(scale)[1]
-        scale_path = os.path.join(scales_dir, scale)
-        st.session_state.test_scale_config = (
-            LikertConfig.from_json(scale_path)
-            if scale_ext == ".json"
-            else LikertConfig.from_toml(scale_path)
-        )
-        with open(os.path.splitext(scale_path)[0] + ".txt", encoding="utf-8") as fi:
-            st.session_state.test_item_content_list = [line.strip() for line in fi]
+    with open(os.path.splitext(scale_path)[0] + ".txt", encoding="utf-8") as fi:
+        st.session_state.test_item_content_list = [line.strip() for line in fi]
 
     st.form_submit_button("Start", on_click=start)
 
@@ -74,7 +61,7 @@ if not st.session_state.test_scale_config:
     st.stop()
 
 if len(st.session_state.test_scale_config.item_map) != len(
-    st.session_state.test_item_content_list
+    st.session_state.test_item_content_list,
 ):
     st.error("The number of items not match.")
     st.stop()
@@ -107,7 +94,7 @@ def show_result():
 
     # 结果展示
     if len(st.session_state.test_scores) != len(
-        st.session_state.test_item_content_list
+        st.session_state.test_item_content_list,
     ):
         st.warning("Please answer all questions.")
         return
@@ -131,7 +118,7 @@ def show_result():
         {
             "Item": st.session_state.test_item_content_list,
             "Score": df.iloc[0, 1:].values,
-        }
+        },
     )
     table_readable = df_readable.to_markdown(index=False)
     st.markdown(table_readable)
@@ -175,9 +162,9 @@ def show_result():
             r=list(res.iloc[0].values) + [res.iat[0, 0]],
             theta=list(res.columns) + [res.columns[0]],
             fill="toself",
-            line=dict(width=2),
-            marker=dict(size=6),
-        )
+            line={"width": 2},
+            marker={"size": 6},
+        ),
     )
 
     # 如果有 sum 组，则无法绘制（sum * weight 会导致坐标轴严重膨胀，非标准 Likert 支持范畴）
@@ -193,14 +180,14 @@ def show_result():
 
     if not has_sum_group:
         fig.update_layout(
-            polar=dict(
-                radialaxis=dict(
-                    visible=True,
-                    range=[_fig_range_min, _fig_range_max],  # 评分范围
-                    tickfont=dict(size=12),
-                ),
-                angularaxis=dict(tickfont=dict(size=14, color="black")),
-            ),
+            polar={
+                "radialaxis": {
+                    "visible": True,
+                    "range": [_fig_range_min, _fig_range_max],  # 评分范围
+                    "tickfont": {"size": 12},
+                },
+                "angularaxis": {"tickfont": {"size": 14, "color": "black"}},
+            },
             title=os.path.splitext(st.session_state.test_scale or "unnamed")[0],
         )
 
@@ -218,7 +205,9 @@ def show_result():
         )
         with st.container(border=True):
             st.write_stream(stream)
-            st.caption("Notes: AI generated content is for reference only, not for diagnosis.")
+            st.caption(
+                "Notes: AI generated content is for reference only, not for diagnosis.",
+            )
     except APIError:
         st.error("OpenAI API error.")
     except Exception as e:
@@ -251,7 +240,7 @@ with st.container(height=300, border=False):
         % (
             st.session_state.test_cur_iid,
             st.session_state.test_item_content_list[st.session_state.test_cur_iid - 1],
-        )
+        ),
     )
 
 # 答题区域，需还原已选择题项答案
@@ -259,7 +248,8 @@ st.select_slider(
     "Answer",
     list(st.session_state.test_scale_config.levels_labels.keys()),
     value=st.session_state.test_scores.get(
-        st.session_state.test_cur_iid, _fig_range_min
+        st.session_state.test_cur_iid,
+        _fig_range_min,
     ),
     key="test_answer_%d_%d"
     % (st.session_state.test_version, st.session_state.test_cur_iid),
@@ -303,8 +293,8 @@ with col_next:
 with st.container(horizontal=True, gap="xxsmall"):
     for i in range(1, len(st.session_state.test_item_content_list) + 1):
         if i == st.session_state.test_cur_iid:
-            st.badge("%d" % (i), width=40)
+            st.badge("%d" % i, width=40)
         elif i in st.session_state.test_scores:
-            st.badge("%d" % (i), width=40, color="green")
+            st.badge("%d" % i, width=40, color="green")
         else:
-            st.badge("%d" % (i), width=40, color="orange")
+            st.badge("%d" % i, width=40, color="orange")

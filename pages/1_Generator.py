@@ -13,7 +13,9 @@ def item_settings(iid: int, content: str):
         st.checkbox("Reverse", key="gen_it_%d_r" % iid)
         st.number_input("Weight", value=1.0, step=0.01, key="gen_it_%d_w" % iid)
         st.selectbox(
-            "Group", st.session_state.gen_group_name_list, key="gen_it_%d_g" % iid
+            "Group",
+            st.session_state.gen_group_name_list,
+            key="gen_it_%d_g" % iid,
         )
 
 
@@ -41,7 +43,7 @@ def generate_config():
                 # 以下两个参数不支持 GUI 设置，强制规范（不一定默认值）
                 aggregate="mean",
                 missing_threshold=0.0,
-            )
+            ),
         )
 
     return LikertConfig(
@@ -73,13 +75,13 @@ if "min_level" not in st.session_state:
 
 def start():
     clean_cache("gen_lvl_")
-    _item_content_list = items_input.split("\n")
+    _item_content_list = (items_input or "").split("\n")
     st.session_state.gen_item_length = len(_item_content_list)
     st.session_state.gen_item_tuple_list = [
         (iid, item_content)
         for iid, item_content in enumerate(_item_content_list, start=1)
     ]
-    st.session_state.gen_group_name_list = groups_input.split("\n")
+    st.session_state.gen_group_name_list = (groups_input or "").split("\n")
     st.session_state.gen_group_length = len(st.session_state.gen_group_name_list)
     st.session_state.gen_levels = levels
     st.session_state.min_level = min_level
@@ -89,10 +91,18 @@ with st.form("gen_starter", True):
     items_input = st.text_area("Enter the items line by line.")
     groups_input = st.text_area("Enter the name of groups line by line.")
     levels = st.number_input(
-        "The number of levels", value=5, step=1, min_value=2, max_value=11
+        "The number of levels",
+        value=5,
+        step=1,
+        min_value=2,
+        max_value=11,
     )
     min_level = st.number_input(
-        "The minimum level", value=1, step=1, min_value=0, max_value=1
+        "The minimum level",
+        value=1,
+        step=1,
+        min_value=0,
+        max_value=1,
     )
     st.form_submit_button("Confirm", on_click=start)
 
