@@ -3,6 +3,10 @@ import os
 import streamlit as st
 
 
+class LikertValueError(ValueError):
+    pass
+
+
 def _is_subdirectory(path: str, parent: str) -> bool:
     path = os.path.abspath(path)
     parent = os.path.abspath(parent)
@@ -34,6 +38,6 @@ def select_scale() -> str:
     if scale:
         scale_path = os.path.join(scales_dir, scale)
         if not _is_subdirectory(scale_path, scales_dir):
-            raise ValueError("invalid scale file")
+            raise LikertValueError("invalid scale file")
         return scale_path
-    raise ValueError("no scale selected")
+    raise LikertValueError("no scale selected")

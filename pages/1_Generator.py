@@ -48,10 +48,10 @@ def generate_config():
 
     return LikertConfig(
         levels_labels={
-            level: st.session_state["gen_lvl_label_%d" % level]
+            level: st.session_state["gen_lvl_label_%d_%d" % (st.session_state.gen_version, level)]
             for level in range(
-                st.session_state.min_level,
-                st.session_state.gen_levels + st.session_state.min_level,
+                st.session_state.gen_min_level,
+                st.session_state.gen_levels + st.session_state.gen_min_level,
             )
         },
         groups=group_config_list,
@@ -68,51 +68,52 @@ if "gen_group_name_list" not in st.session_state:
 if "gen_group_length" not in st.session_state:
     st.session_state.gen_group_length = 0
 if "gen_levels" not in st.session_state:
-    st.session_state.gen_levels = 0
+    st.session_state.gen_levels = 5
 if "min_level" not in st.session_state:
-    st.session_state.min_level = 1
+    st.session_state.gen_min_level = 1
+if "gen_version" not in st.session_state:
+    st.session_state.gen_version = 1
 
 
 def start():
     clean_cache("gen_lvl_")
-    _item_content_list = (items_input or "").split("\n")
+    _item_content_list = (st.session_state.gen_items_input or "").split("\n")
     st.session_state.gen_item_length = len(_item_content_list)
     st.session_state.gen_item_tuple_list = [
         (iid, item_content)
         for iid, item_content in enumerate(_item_content_list, start=1)
     ]
-    st.session_state.gen_group_name_list = (groups_input or "").split("\n")
+    st.session_state.gen_group_name_list = (st.session_state.gen_groups_input or "").split("\n")
     st.session_state.gen_group_length = len(st.session_state.gen_group_name_list)
-    st.session_state.gen_levels = levels
-    st.session_state.min_level = min_level
+    st.session_state.gen_version += 1
 
 
-with st.form("gen_starter", True):
-    items_input = st.text_area("Enter the items line by line.")
-    groups_input = st.text_area("Enter the name of groups line by line.")
-    levels = st.number_input(
+with st.form("gen_starter"):
+    st.text_area("Enter the items line by line.", key="gen_items_input")
+    st.text_area("Enter the name of groups line by line.", key="gen_groups_input")
+    st.number_input(
         "The number of levels",
-        value=5,
         step=1,
         min_value=2,
         max_value=11,
+        key="gen_levels"
     )
-    min_level = st.number_input(
+    st.number_input(
         "The minimum level",
-        value=1,
         step=1,
         min_value=0,
         max_value=1,
+        key="gen_min_level"
     )
     st.form_submit_button("Confirm", on_click=start)
 
 
 with st.container(border=True):
     for level in range(
-        st.session_state.min_level,
-        st.session_state.gen_levels + st.session_state.min_level,
+        st.session_state.gen_min_level,
+        st.session_state.gen_levels + st.session_state.gen_min_level,
     ):
-        st.text_input("Level %d" % level, key="gen_lvl_label_%d" % level)
+        st.text_input("Level %d" % level, key="gen_lvl_label_%d_%d" % (st.session_state.gen_version, level))
 
 with st.container(border=True):
     for iid, item_content in st.session_state.gen_item_tuple_list:

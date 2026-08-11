@@ -8,7 +8,7 @@ from openai import APIError, OpenAI
 
 from likert import LikertConfig, compute_likert
 from likert.model import dump_config
-from stutils.stutils import clean_cache, select_scale
+from stutils.stutils import LikertValueError, clean_cache, select_scale
 
 
 @st.cache_resource
@@ -20,7 +20,7 @@ def get_openai_client():
 
 
 if "submitted" not in st.session_state:
-    st.session_state.submitted = False
+    st.session_state.test_form_submitted = False
 if "test_scale" not in st.session_state:
     st.session_state.test_scale = None
 if "test_scores" not in st.session_state:
@@ -39,25 +39,27 @@ def start():
     clean_cache("test_answer_")
     st.session_state.test_scores = {}
     st.session_state.test_cur_iid = 1
-    st.session_state.submitted = False
+    st.session_state.test_form_submitted = False
     st.session_state.test_version += 1
 
 
 with st.form("test_starter"):
-    scale_path = select_scale()
-    scale_ext = os.path.splitext(scale_path)[1]
-    st.session_state.test_scale_config = (
-        LikertConfig.from_json(scale_path)
-        if scale_ext == ".json"
-        else LikertConfig.from_toml(scale_path)
-    )
-    with open(os.path.splitext(scale_path)[0] + ".txt", encoding="utf-8") as fi:
-        st.session_state.test_item_content_list = [line.strip() for line in fi]
+    try:
+        scale_path = select_scale()
+        scale_ext = os.path.splitext(scale_path)[1]
+        st.session_state.test_scale_config = (
+            LikertConfig.from_json(scale_path)
+            if scale_ext == ".json"
+            else LikertConfig.from_toml(scale_path)
+        )
+        with open(os.path.splitext(scale_path)[0] + ".txt", encoding="utf-8") as fi:
+            st.session_state.test_item_content_list = [line.strip() for line in fi]
+    except LikertValueError:
+        st.error("please select a valid scale")
 
     st.form_submit_button("Start", on_click=start)
 
 if not st.session_state.test_scale_config:
-    st.error("Please select a scale.")
     st.stop()
 
 if len(st.session_state.test_scale_config.item_map) != len(
@@ -90,7 +92,7 @@ def go_next():
 def show_result():
     record_answer()
 
-    st.session_state.submitted = True
+    st.session_state.test_form_submitted = True
 
     # 结果展示
     if len(st.session_state.test_scores) != len(
@@ -223,14 +225,14 @@ with col_age:
         max_value=200,
         step=1,
         key="test_age",
-        disabled=st.session_state.submitted,
+        disabled=st.session_state.test_form_submitted,
     )
 with col_gender:
     st.segmented_control(
         "Gender",
         ["Male", "Female"],
         key="test_gender",
-        disabled=st.session_state.submitted,
+        disabled=st.session_state.test_form_submitted,
     )
 
 # 题目显示
@@ -255,7 +257,7 @@ st.select_slider(
     % (st.session_state.test_version, st.session_state.test_cur_iid),
     format_func=lambda x: st.session_state.test_scale_config.levels_labels[x],
     on_change=record_answer,
-    disabled=st.session_state.submitted,
+    disabled=st.session_state.test_form_submitted,
 )
 
 # 上一题、下一题按钮
@@ -263,7 +265,7 @@ col_prev, _col_blank, col_next = st.columns(3)
 with col_prev:
     st.button(
         "Previous",
-        disabled=st.session_state.submitted or (st.session_state.test_cur_iid <= 1),
+        disabled=st.session_state.test_form_submitted or (st.session_state.test_cur_iid <= 1),
         on_click=go_prev,
         width="stretch",
         icon=":material/arrow_left:",
@@ -271,7 +273,7 @@ with col_prev:
 with col_next:
     st.button(
         "Next",
-        disabled=st.session_state.submitted
+        disabled=st.session_state.test_form_submitted
         or (
             st.session_state.test_cur_iid
             >= len(st.session_state.test_item_content_list)
@@ -286,7 +288,7 @@ with col_next:
             "Submit",
             on_click=show_result,
             width="stretch",
-            disabled=st.session_state.submitted,
+            disabled=st.session_state.test_form_submitted,
         )
 
 # 答题状态展示
