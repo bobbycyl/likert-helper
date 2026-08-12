@@ -19,7 +19,7 @@ def get_openai_client():
     )
 
 
-if "submitted" not in st.session_state:
+if "test_form_submitted" not in st.session_state:
     st.session_state.test_form_submitted = False
 if "test_scale" not in st.session_state:
     st.session_state.test_scale = None

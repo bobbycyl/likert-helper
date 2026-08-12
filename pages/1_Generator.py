@@ -69,7 +69,7 @@ if "gen_group_length" not in st.session_state:
     st.session_state.gen_group_length = 0
 if "gen_levels" not in st.session_state:
     st.session_state.gen_levels = 5
-if "min_level" not in st.session_state:
+if "gen_min_level" not in st.session_state:
     st.session_state.gen_min_level = 1
 if "gen_version" not in st.session_state:
     st.session_state.gen_version = 1
