@@ -1,0 +1,91 @@
+[scale.levels_labels]
+1 = "完全不符合"
+2 = "不符合"
+3 = "不确定"
+4 = "符合"
+5 = "完全符合"
+
+[items]
+reverse = [4, 6, 10, 14, 17, 23, 24, 29, 32, 35, 44, 45, 46, 52, 53, 57, 60, 64, 66, 69, 70, 71, 74, 75, 76, 80, 83, 85, 90, 92, 93, 96, 97, 98, 102, 104, 107, 108, 113, 114, 117, 121, 122, 126, 128, 130, 132, 133, 136]
+
+[items.weights]
+
+[groups."乐群性(A)"]
+items = [1, 27, 54, 68, 80, 91, 106, 118, 128]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."聪慧性(B)"]
+items = [13, 28, 41, 55, 81, 92, 97, 107, 119, 129, 137]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."稳定性(C)"]
+items = [2, 14, 56, 69, 82, 93, 108, 120, 130]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."支配性(E)"]
+items = [3, 15, 29, 42, 70, 83, 94, 109, 121, 131]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."活跃性(F)"]
+items = [4, 16, 30, 43, 57, 84, 95, 132]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."规则意识(G)"]
+items = [5, 17, 31, 44, 71, 96, 110, 133]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."敢为性(H)"]
+items = [18, 32, 45, 58, 72, 111, 122, 134]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."敏感性(I)"]
+items = [19, 33, 46, 59, 85, 98, 123, 135]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."警惕性(L)"]
+items = [6, 20, 34, 47, 60, 73, 86, 112, 136]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."抽象性(M)"]
+items = [7, 21, 48, 61, 74, 87, 99, 124]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."世故性(N)"]
+items = [8, 22, 35, 49, 62, 75, 100, 113]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."忧虑性(O)"]
+items = [9, 23, 36, 50, 63, 76, 101, 114, 125]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."变革性(Q1)"]
+items = [10, 24, 37, 51, 64, 77, 88, 102, 115]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."独立性(Q2)"]
+items = [11, 25, 38, 52, 65, 78, 103]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."完美性(Q3)"]
+items = [39, 66, 79, 89, 104, 116, 126]
+aggregate = "mean"
+missing_threshold = 0.0
+
+[groups."紧张性(Q4)"]
+items = [12, 26, 40, 53, 67, 90, 105, 117, 127]
+aggregate = "mean"
+missing_threshold = 0.0
