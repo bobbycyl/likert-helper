@@ -195,6 +195,11 @@ def show_result():
 
         st.plotly_chart(fig, width="stretch")
 
+    # check access code for AI service
+    access_codes = st.secrets.openai.get("allowed", [])
+    if st.session_state.test_access_code not in access_codes:
+        return
+    
     try:
         stream = get_openai_client().chat.completions.create(
             model=st.secrets.openai.model,
@@ -210,13 +215,15 @@ def show_result():
             st.caption(
                 "Notes: AI generated content is for reference only, not for diagnosis.",
             )
-    except APIError:
+    except APIError as e:
         st.error("OpenAI API error.")
+        print(e)
     except Exception as e:
         st.error("Unexpected Error: %s" % e)
 
 
 # 基本信息填写
+st.text_input("Access Code", key="test_access_code", disabled=st.session_state.test_form_submitted)
 col_age, col_gender = st.columns(2)
 with col_age:
     st.number_input(
@@ -226,6 +233,7 @@ with col_age:
         step=1,
         key="test_age",
         disabled=st.session_state.test_form_submitted,
+        width="stretch",
     )
 with col_gender:
     st.segmented_control(
@@ -233,6 +241,7 @@ with col_gender:
         ["Male", "Female"],
         key="test_gender",
         disabled=st.session_state.test_form_submitted,
+        width="stretch",
     )
 
 # 题目显示

@@ -1,0 +1,16 @@
+[scale.levels_labels]
+1 = "完全不符合"
+2 = "不符合"
+3 = "不确定"
+4 = "符合"
+5 = "完全符合"
+
+[items]
+reverse = [2]
+
+[items.weights]
+
+[groups.only]
+items = [1, 2]
+aggregate = "mean"
+missing_threshold = 0.0
