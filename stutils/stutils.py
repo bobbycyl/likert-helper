@@ -22,13 +22,17 @@ def clean_cache(prefix: str):
 
 
 @st.cache_resource
-def select_scale() -> str:
-    scales_dir = os.path.join(str(os.path.dirname(__file__)), "..", "scales")
-    local_scale_files = [
+def get_local_scale_files(scales_dir: str) -> list[str]:
+    return [
         x
         for x in os.listdir(scales_dir)
         if os.path.splitext(x)[1] in [".toml", ".json"]
     ]
+
+
+def select_scale() -> str:
+    scales_dir = os.path.join(str(os.path.dirname(__file__)), "..", "scales")
+    local_scale_files = get_local_scale_files(scales_dir)
     scale = st.selectbox(
         "Select a scale",
         local_scale_files,
