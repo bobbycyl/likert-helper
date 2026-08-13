@@ -188,7 +188,8 @@ def show_result():
                 },
                 "angularaxis": {"tickfont": {"size": 14, "color": "black"}},
             },
-            title=os.path.splitext(st.session_state.test_scale or "unnamed")[0] + " - 评测结果雷达图",
+            title=os.path.splitext(st.session_state.test_scale or "unnamed")[0]
+            + " - 评测结果雷达图",
         )
 
         st.plotly_chart(fig, width="stretch")
@@ -274,7 +275,8 @@ col_prev, _col_blank, col_next = st.columns(3)
 with col_prev:
     st.button(
         "上一题",
-        disabled=st.session_state.test_form_submitted or (st.session_state.test_cur_iid <= 1),
+        disabled=st.session_state.test_form_submitted
+        or (st.session_state.test_cur_iid <= 1),
         on_click=go_prev,
         width="stretch",
         icon=":material/arrow_left:",
