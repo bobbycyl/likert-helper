@@ -89,12 +89,13 @@ def go_next():
     st.session_state.test_cur_iid += 1
 
 
-def show_result():
+def submit():
     record_answer()
-
     st.session_state.test_form_submitted = True
+    st.rerun()
 
-    # 结果展示
+
+def show_result():
     if len(st.session_state.test_scores) != len(
         st.session_state.test_item_content_list,
     ):
@@ -245,69 +246,105 @@ with col_gender:
         width="stretch",
     )
 
+
 # 题目显示
-with st.container(height=300, border=False):
-    st.text(
-        "Question %d\n%s"
-        % (
-            st.session_state.test_cur_iid,
-            st.session_state.test_item_content_list[st.session_state.test_cur_iid - 1],
-        ),
-    )
-
-# 答题区域，需还原已选择题项答案
-st.select_slider(
-    "Answer",
-    list(st.session_state.test_scale_config.levels_labels.keys()),
-    value=st.session_state.test_scores.get(
-        st.session_state.test_cur_iid,
-        _fig_range_min,
-    ),
-    key="test_answer_%d_%d"
-    % (st.session_state.test_version, st.session_state.test_cur_iid),
-    format_func=lambda x: st.session_state.test_scale_config.levels_labels[x],
-    on_change=record_answer,
-    disabled=st.session_state.test_form_submitted,
-)
-
-# 上一题、下一题按钮
-col_prev, _col_blank, col_next = st.columns(3)
-with col_prev:
-    st.button(
-        "上一题",
-        disabled=st.session_state.test_form_submitted
-        or (st.session_state.test_cur_iid <= 1),
-        on_click=go_prev,
-        width="stretch",
-        icon=":material/arrow_left:",
-    )
-with col_next:
-    st.button(
-        "下一题",
-        disabled=st.session_state.test_form_submitted
-        or (
-            st.session_state.test_cur_iid
-            >= len(st.session_state.test_item_content_list)
-        ),
-        on_click=go_next,
-        width="stretch",
-        icon=":material/arrow_right:",
-        icon_position="right",
-    )
-    if st.session_state.test_cur_iid == len(st.session_state.test_item_content_list):
-        st.button(
-            "提交",
-            on_click=show_result,
-            width="stretch",
-            disabled=st.session_state.test_form_submitted,
+@st.fragment
+def qa():
+    with st.container(height=300, border=False):
+        st.text(
+            "Question %d\n%s"
+            % (
+                st.session_state.test_cur_iid,
+                st.session_state.test_item_content_list[
+                    st.session_state.test_cur_iid - 1
+                ],
+            ),
         )
 
-# 答题状态展示
-with st.container(horizontal=True, gap="xxsmall"):
-    for i in range(1, len(st.session_state.test_item_content_list) + 1):
-        if i == st.session_state.test_cur_iid:
-            st.badge("%d" % i, width=40)
-        elif i in st.session_state.test_scores:
-            st.badge("%d" % i, width=40, color="green")
-        else:
-            st.badge("%d" % i, width=40, color="orange")
+    # 答题区域，需还原已选择题项答案
+    st.select_slider(
+        "Answer",
+        list(st.session_state.test_scale_config.levels_labels.keys()),
+        value=st.session_state.test_scores.get(
+            st.session_state.test_cur_iid,
+            _fig_range_min,
+        ),
+        key="test_answer_%d_%d"
+        % (st.session_state.test_version, st.session_state.test_cur_iid),
+        format_func=lambda x: st.session_state.test_scale_config.levels_labels[x],
+        on_change=record_answer,
+        disabled=st.session_state.test_form_submitted,
+    )
+
+    # 上一题、下一题按钮
+    col_prev, _col_blank, col_next = st.columns(3)
+    with col_prev:
+        st.button(
+            "上一题",
+            disabled=st.session_state.test_form_submitted
+            or (st.session_state.test_cur_iid <= 1),
+            on_click=go_prev,
+            width="stretch",
+            icon=":material/arrow_left:",
+        )
+    with col_next:
+        st.button(
+            "下一题",
+            disabled=st.session_state.test_form_submitted
+            or (
+                st.session_state.test_cur_iid
+                >= len(st.session_state.test_item_content_list)
+            ),
+            on_click=go_next,
+            width="stretch",
+            icon=":material/arrow_right:",
+            icon_position="right",
+        )
+        if st.session_state.test_cur_iid == len(
+            st.session_state.test_item_content_list
+        ) and st.button(
+            "提交",
+            width="stretch",
+            disabled=st.session_state.test_form_submitted,
+        ):
+            submit()
+
+    # 答题状态展示
+    badge_styles = {
+        "blue": ("#dce9f9", "#1b5ca8"),  # 当前题
+        "green": ("#ddf2e4", "#177a46"),  # 已作答
+        "orange": ("#fde8d0", "#a85f00"),  # 未作答
+    }
+
+    def _badge_html(i):
+        color = (
+            "blue"
+            if i == st.session_state.test_cur_iid
+            else "green" if i in st.session_state.test_scores else "orange"
+        )
+        bg, fg = badge_styles[color]
+        return (
+            '<span style="text-align:center">'
+            f'<span style="display:inline-block;width:100%;border-radius:0.375em;'
+            f"background-color:{bg};color:{fg};font-size:0.85rem;"
+            f'line-height:1.8;white-space:nowrap">{i}</span>'
+            "</span>"
+        )
+
+    # grid 响应式
+    # auto-fill 保留空轨道，不足一行左侧对齐、不拉伸
+    st.markdown(
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(3.5rem,1fr));gap:6px">'
+        + "".join(
+            _badge_html(i)
+            for i in range(1, len(st.session_state.test_item_content_list) + 1)
+        )
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+qa()
+
+if st.session_state.test_form_submitted is True:
+    show_result()
