@@ -55,7 +55,7 @@ with st.form("test_starter"):
         with open(os.path.splitext(scale_path)[0] + ".txt", encoding="utf-8") as fi:
             st.session_state.test_item_content_list = [line.strip() for line in fi]
     except LikertValueError:
-        st.error("please select a valid scale")
+        st.error("请选择一个有效量表")
 
     st.form_submit_button("Start", on_click=start)
 
@@ -65,7 +65,7 @@ if not st.session_state.test_scale_config:
 if len(st.session_state.test_scale_config.item_map) != len(
     st.session_state.test_item_content_list,
 ):
-    st.error("The number of items not match.")
+    st.error("量表题项数量不匹配，请检查量表设置")
     st.stop()
 
 _fig_range_min = min(st.session_state.test_scale_config.levels_labels.keys())
@@ -123,7 +123,6 @@ def show_result():
         },
     )
     table_readable = df_readable.to_markdown(index=False)
-    st.markdown(table_readable)
 
     res = compute_likert(df, st.session_state.test_scale_config).drop("User", axis=1)
     # show as markdown, one line per column
@@ -131,7 +130,6 @@ def show_result():
     col = res.columns
     for i in range(len(col)):
         res_str += "**%s**: %s\n\n" % (col[i], res.iat[0, i])
-    st.markdown(res_str)
 
     user_prompt = f"""# 用户 {os.path.splitext(st.session_state.test_scale or "<未定义>")[0]} 量表测评结果
 
@@ -190,7 +188,7 @@ def show_result():
                 },
                 "angularaxis": {"tickfont": {"size": 14, "color": "black"}},
             },
-            title=os.path.splitext(st.session_state.test_scale or "unnamed")[0],
+            title=os.path.splitext(st.session_state.test_scale or "unnamed")[0] + " - 评测结果雷达图",
         )
 
         st.plotly_chart(fig, width="stretch")
@@ -216,7 +214,7 @@ def show_result():
                 "Notes: AI generated content is for reference only, not for diagnosis.",
             )
     except APIError as e:
-        st.error("OpenAI API error.")
+        st.error("OpenAI API error")
         print(e)
     except Exception as e:
         st.error("Unexpected Error: %s" % e)
@@ -229,7 +227,7 @@ st.text_input(
 col_age, col_gender = st.columns(2)
 with col_age:
     st.number_input(
-        "Age",
+        "年龄",
         min_value=0,
         max_value=200,
         step=1,
@@ -239,8 +237,8 @@ with col_age:
     )
 with col_gender:
     st.segmented_control(
-        "Gender",
-        ["Male", "Female"],
+        "性别",
+        ["男", "女"],
         key="test_gender",
         disabled=st.session_state.test_form_submitted,
         width="stretch",
@@ -275,16 +273,15 @@ st.select_slider(
 col_prev, _col_blank, col_next = st.columns(3)
 with col_prev:
     st.button(
-        "Previous",
-        disabled=st.session_state.test_form_submitted
-        or (st.session_state.test_cur_iid <= 1),
+        "上一题",
+        disabled=st.session_state.test_form_submitted or (st.session_state.test_cur_iid <= 1),
         on_click=go_prev,
         width="stretch",
         icon=":material/arrow_left:",
     )
 with col_next:
     st.button(
-        "Next",
+        "下一题",
         disabled=st.session_state.test_form_submitted
         or (
             st.session_state.test_cur_iid
@@ -297,7 +294,7 @@ with col_next:
     )
     if st.session_state.test_cur_iid == len(st.session_state.test_item_content_list):
         st.button(
-            "Submit",
+            "提交",
             on_click=show_result,
             width="stretch",
             disabled=st.session_state.test_form_submitted,
