@@ -250,6 +250,7 @@ with col_gender:
 # 题目显示
 @st.fragment
 def qa():
+    st.progress(len(st.session_state.test_scores) / len(st.session_state.test_item_content_list))
     with st.container(height=300, border=False):
         st.text(
             "Question %d\n%s"
@@ -308,40 +309,6 @@ def qa():
             disabled=st.session_state.test_form_submitted,
         ):
             submit()
-
-    # 答题状态展示
-    badge_styles = {
-        "blue": ("#dce9f9", "#1b5ca8"),  # 当前题
-        "green": ("#ddf2e4", "#177a46"),  # 已作答
-        "orange": ("#fde8d0", "#a85f00"),  # 未作答
-    }
-
-    def _badge_html(i):
-        color = (
-            "blue"
-            if i == st.session_state.test_cur_iid
-            else "green" if i in st.session_state.test_scores else "orange"
-        )
-        bg, fg = badge_styles[color]
-        return (
-            '<span style="text-align:center">'
-            f'<span style="display:inline-block;width:100%;border-radius:0.375em;'
-            f"background-color:{bg};color:{fg};font-size:0.85rem;"
-            f'line-height:1.8;white-space:nowrap">{i}</span>'
-            "</span>"
-        )
-
-    # grid 响应式
-    # auto-fill 保留空轨道，不足一行左侧对齐、不拉伸
-    st.markdown(
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(3.5rem,1fr));gap:6px">'
-        + "".join(
-            _badge_html(i)
-            for i in range(1, len(st.session_state.test_item_content_list) + 1)
-        )
-        + "</div>",
-        unsafe_allow_html=True,
-    )
 
 
 qa()
