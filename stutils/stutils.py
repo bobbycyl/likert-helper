@@ -21,6 +21,7 @@ def clean_cache(prefix: str):
             del st.session_state[key]
 
 
+@st.cache_resource
 def select_scale() -> str:
     scales_dir = os.path.join(str(os.path.dirname(__file__)), "..", "scales")
     local_scale_files = [
