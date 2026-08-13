@@ -199,7 +199,7 @@ def show_result():
     access_codes = st.secrets.openai.get("allowed", [])
     if st.session_state.test_access_code not in access_codes:
         return
-    
+
     try:
         stream = get_openai_client().chat.completions.create(
             model=st.secrets.openai.model,
@@ -223,7 +223,9 @@ def show_result():
 
 
 # 基本信息填写
-st.text_input("Access Code", key="test_access_code", disabled=st.session_state.test_form_submitted)
+st.text_input(
+    "Access Code", key="test_access_code", disabled=st.session_state.test_form_submitted
+)
 col_age, col_gender = st.columns(2)
 with col_age:
     st.number_input(
@@ -274,7 +276,8 @@ col_prev, _col_blank, col_next = st.columns(3)
 with col_prev:
     st.button(
         "Previous",
-        disabled=st.session_state.test_form_submitted or (st.session_state.test_cur_iid <= 1),
+        disabled=st.session_state.test_form_submitted
+        or (st.session_state.test_cur_iid <= 1),
         on_click=go_prev,
         width="stretch",
         icon=":material/arrow_left:",

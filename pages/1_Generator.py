@@ -48,7 +48,9 @@ def generate_config():
 
     return LikertConfig(
         levels_labels={
-            level: st.session_state["gen_lvl_label_%d_%d" % (st.session_state.gen_version, level)]
+            level: st.session_state[
+                "gen_lvl_label_%d_%d" % (st.session_state.gen_version, level)
+            ]
             for level in range(
                 st.session_state.gen_min_level,
                 st.session_state.gen_levels + st.session_state.gen_min_level,
@@ -83,7 +85,9 @@ def start():
         (iid, item_content)
         for iid, item_content in enumerate(_item_content_list, start=1)
     ]
-    st.session_state.gen_group_name_list = (st.session_state.gen_groups_input or "").split("\n")
+    st.session_state.gen_group_name_list = (
+        st.session_state.gen_groups_input or ""
+    ).split("\n")
     st.session_state.gen_group_length = len(st.session_state.gen_group_name_list)
     st.session_state.gen_version += 1
 
@@ -92,18 +96,10 @@ with st.form("gen_starter"):
     st.text_area("Enter the items line by line.", key="gen_items_input")
     st.text_area("Enter the name of groups line by line.", key="gen_groups_input")
     st.number_input(
-        "The number of levels",
-        step=1,
-        min_value=2,
-        max_value=11,
-        key="gen_levels"
+        "The number of levels", step=1, min_value=2, max_value=11, key="gen_levels"
     )
     st.number_input(
-        "The minimum level",
-        step=1,
-        min_value=0,
-        max_value=1,
-        key="gen_min_level"
+        "The minimum level", step=1, min_value=0, max_value=1, key="gen_min_level"
     )
     st.form_submit_button("Confirm", on_click=start)
 
@@ -113,7 +109,10 @@ with st.container(border=True):
         st.session_state.gen_min_level,
         st.session_state.gen_levels + st.session_state.gen_min_level,
     ):
-        st.text_input("Level %d" % level, key="gen_lvl_label_%d_%d" % (st.session_state.gen_version, level))
+        st.text_input(
+            "Level %d" % level,
+            key="gen_lvl_label_%d_%d" % (st.session_state.gen_version, level),
+        )
 
 with st.container(border=True):
     for iid, item_content in st.session_state.gen_item_tuple_list:

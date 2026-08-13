@@ -59,7 +59,7 @@ def compute_likert(
     _max_lvl = max(levels_labels.keys())
 
     # 第 0 列为样本 ID
-    sample_id_col_name = df.columns[0]
+    sample_id_col_name = str(df.columns[0])
     sample_id_series = df[sample_id_col_name]
 
     # 验证题项数量是否正确
@@ -93,7 +93,7 @@ def compute_likert(
         # 逐行聚合
         scores: list[float] = []
         for idx in range(len(subset)):
-            row = pd.Series(pd.to_numeric(subset.iloc[idx], errors="coerce")).values
+            row = pd.Series(pd.to_numeric(subset.iloc[idx], errors="coerce"))
             mask = ~np.isnan(row)
             n_valid = mask.sum()
             n_total = len(row)
