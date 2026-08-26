@@ -13,7 +13,7 @@ GROUP_DEFAULT_MISSING_THRESHOLD = 0.5
 class ItemConfig:
     """题项配置"""
 
-    id: int  # 题目编号
+    id: int  # 题项编号
     reverse: bool = ITEM_DEFAULT_REVERSE  # 是否反向编码（默认否）
     weight: float = ITEM_DEFAULT_WEIGHT  # 权重（默认等权）
 
